@@ -1,0 +1,18 @@
+[project]
+name = "agile-sprint-guardian"
+version = "0.1.0"
+description = "A multi-agent system to convert raw requirements into JIRA tickets."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "google-genai",
+    "pydantic",
+    "python-dotenv",
+    "fastapi",
+    "uvicorn",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]

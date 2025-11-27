@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        /* Light Mode */
+        --background: 248 250 252;
+        /* Slate 50 */
+        --surface: 255 255 255;
+        /* White */
+        --primary: 59 130 246;
+        /* Blue 500 */
+        --secondary: 139 92 246;
+        /* Violet 500 */
+        --accent: 16 185 129;
+        /* Emerald 500 */
+        --text: 15 23 42;
+        /* Slate 900 */
+        --text-muted: 100 116 139;
+        /* Slate 500 */
+    }
+
+    .dark {
+        /* Dark Mode */
+        --background: 15 23 42;
+        /* Slate 900 */
+        --surface: 30 41 59;
+        /* Slate 800 */
+        --primary: 59 130 246;
+        /* Blue 500 */
+        --secondary: 139 92 246;
+        /* Violet 500 */
+        --accent: 16 185 129;
+        /* Emerald 500 */
+        --text: 248 250 252;
+        /* Slate 50 */
+        --text-muted: 148 163 184;
+        /* Slate 400 */
+    }
+}
+
+body {
+    @apply bg-background text-text transition-colors duration-300;
+    font-family: 'Inter', sans-serif;
+}
