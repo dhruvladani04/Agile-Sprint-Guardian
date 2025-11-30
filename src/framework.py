@@ -7,10 +7,11 @@ from google import genai
 from google.genai import types
 
 class Agent:
-    def __init__(self, model: str, system_instruction: str, output_type: Type[BaseModel]):
+    def __init__(self, model: str, system_instruction: str, output_type: Type[BaseModel], name: str = "Agent"):
         self.model = model
         self.system_instruction = system_instruction
         self.output_type = output_type
+        self.name = name
         api_key = os.environ.get("GOOGLE_API_KEY")
         if not api_key:
             raise ValueError("GOOGLE_API_KEY not found in environment variables. Please set it in a .env file.")

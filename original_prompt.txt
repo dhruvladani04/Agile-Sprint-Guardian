@@ -1,0 +1,47 @@
+Feature Request: Smart Notification Preferences for Users
+Description
+
+Users want more control over what types of notifications they receive from the app. Currently, all notifications (reminders, updates, tips, alerts) are enabled by default with no customization options.
+
+Problem
+
+Users receive too many irrelevant notifications.
+
+No way to mute certain categories (e.g., promotional alerts).
+
+Lack of granularity results in notification fatigue and lower engagement.
+
+Requested Feature
+
+Add a Smart Notification Preferences screen where users can:
+
+Toggle notification categories ON/OFF
+(e.g., Reminders, Security Alerts, Promotions, Tips & Insights)
+
+Set frequency preferences (e.g., Immediate, Daily Summary, Weekly Summary)
+
+Enable “Do Not Disturb” hours
+
+Optionally use AI to auto-configure based on user behavior
+
+Expected Outcome
+
+Users feel more in control of their notification flow.
+
+Reduction in irrelevant notifications.
+
+Higher app satisfaction and engagement.
+
+Acceptance Criteria
+
+User can access “Notification Preferences” from Settings.
+
+Each category has a toggle switch.
+
+“Do Not Disturb” has custom start/end time.
+
+AI Auto-Configure button suggests optimal settings.
+
+Preferences persist across sessions.
+
+All UI elements follow existing design guidelines.

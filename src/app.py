@@ -1,4 +1,6 @@
 import os
+import json
+from typing import List
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -8,6 +10,7 @@ from dotenv import load_dotenv
 from src.framework import SequentialAgent, ParallelAgent
 from src.agents.po import create_po_agent
 from src.agents.specialists import create_tech_lead_agent, create_secops_agent
+from src.agents.qa import create_qa_agent
 from src.agents.gatekeeper import create_gatekeeper_agent
 from src.schemas import FinalTicket
 
@@ -34,39 +37,60 @@ async def generate_ticket(request: GenerateRequest):
         po_agent = create_po_agent()
         tech_agent = create_tech_lead_agent()
         secops_agent = create_secops_agent()
+        qa_agent = create_qa_agent()
         gatekeeper_agent = create_gatekeeper_agent()
+
+        # Load Context
+        context = ""
+        if os.path.exists("project_context.md"):
+            with open("project_context.md", "r") as f:
+                context = f.read()
+        
+        full_input = f"Project Context:\n{context}\n\nFeature Request:\n{request.brain_dump}"
 
         # Run Workflow
         # 1. PO Agent
-        user_story = await po_agent.run(request.brain_dump)
+        user_story = await po_agent.run(full_input)
         
         # 2. Specialists (Parallel)
-        specialists = ParallelAgent([tech_agent, secops_agent])
+        specialists = ParallelAgent([tech_agent, secops_agent, qa_agent])
         specialist_results = await specialists.run(user_story)
-        tech_estimate, security_review = specialist_results
+        tech_estimate, security_review, test_plan = specialist_results
         
         # 3. Gatekeeper
         gatekeeper_input = {
             "user_story": user_story,
             "tech_estimate": tech_estimate,
-            "security_review": security_review
+            "security_review": security_review,
+            "test_plan": test_plan
         }
         final_ticket = await gatekeeper_agent.run(gatekeeper_input)
         
-        # Save ticket locally as well
+        # Save Ticket
         os.makedirs("tickets", exist_ok=True)
         filename = f"tickets/{final_ticket.summary.replace(' ', '_').lower()}.json"
         with open(filename, "w") as f:
             f.write(final_ticket.model_dump_json(indent=2))
+            
+        # Save Trace
+        os.makedirs("traces", exist_ok=True)
+        trace_data = {
+            "brain_dump": request.brain_dump,
+            "user_story": user_story.model_dump(),
+            "tech_estimate": tech_estimate.model_dump(),
+            "security_review": security_review.model_dump(),
+            "test_plan": test_plan.model_dump(),
+            "final_ticket": final_ticket.model_dump()
+        }
+        trace_filename = f"traces/{final_ticket.summary.replace(' ', '_').lower()}.json"
+        with open(trace_filename, "w") as f:
+            json.dump(trace_data, f, indent=2)
             
         return final_ticket
 
     except Exception as e:
         print(f"Error generating ticket: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-import json
-from typing import List
 
 @app.get("/api/tickets", response_model=List[FinalTicket])
 async def list_tickets():
@@ -90,8 +114,39 @@ async def delete_ticket(summary: str):
     filename = f"tickets/{summary.replace(' ', '_').lower()}.json"
     if os.path.exists(filename):
         os.remove(filename)
-        return {"message": "Ticket deleted successfully"}
+        
+    # Also delete the trace file if it exists
+    trace_filename = f"traces/{summary.replace(' ', '_').lower()}.json"
+    if os.path.exists(trace_filename):
+        os.remove(trace_filename)
+            
+    return {"message": "Ticket deleted successfully"}
+    
     raise HTTPException(status_code=404, detail="Ticket not found")
+
+@app.get("/api/traces/{summary}")
+async def get_trace(summary: str):
+    filename = f"traces/{summary.replace(' ', '_').lower()}.json"
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            return json.load(f)
+    raise HTTPException(status_code=404, detail="Trace not found")
+
+@app.get("/api/context")
+async def get_context():
+    if os.path.exists("project_context.md"):
+        with open("project_context.md", "r") as f:
+            return {"content": f.read()}
+    return {"content": ""}
+
+class ContextUpdate(BaseModel):
+    content: str
+
+@app.post("/api/context")
+async def update_context(update: ContextUpdate):
+    with open("project_context.md", "w") as f:
+        f.write(update.content)
+    return {"message": "Context updated"}
 
 # Serve static files (Frontend) - Only if dist exists
 if os.path.exists("ui/dist"):

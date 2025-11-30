@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Shield, Code, FileJson, Copy, Check, ArrowRight, Loader2, LayoutDashboard, PlusCircle, AlertCircle, Sun, Moon, Trash2 } from 'lucide-react';
+import { Sparkles, Shield, Code, FileJson, Copy, Check, ArrowRight, Loader2, LayoutDashboard, PlusCircle, AlertCircle, Sun, Moon, Trash2, Activity, X, Settings, Save, TestTube } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 function App() {
-    const [view, setView] = useState('new'); // 'new' or 'dashboard'
+    const [view, setView] = useState('new'); // 'new', 'dashboard', 'settings'
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [step, setStep] = useState(0);
     const [copied, setCopied] = useState(false);
     const [tickets, setTickets] = useState([]);
+    const [selectedTrace, setSelectedTrace] = useState(null);
+    const [context, setContext] = useState('');
+    const [savingContext, setSavingContext] = useState(false);
 
     // Theme State
     const [theme, setTheme] = useState(() => {
@@ -38,6 +41,8 @@ function App() {
     useEffect(() => {
         if (view === 'dashboard') {
             fetchTickets();
+        } else if (view === 'settings') {
+            fetchContext();
         }
     }, [view]);
 
@@ -48,6 +53,33 @@ function App() {
             setTickets(data);
         } catch (error) {
             console.error("Failed to fetch tickets", error);
+        }
+    };
+
+    const fetchContext = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/api/context');
+            const data = await response.json();
+            setContext(data.content);
+        } catch (error) {
+            console.error("Failed to fetch context", error);
+        }
+    };
+
+    const saveContext = async () => {
+        setSavingContext(true);
+        try {
+            await fetch('http://localhost:8000/api/context', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: context }),
+            });
+            alert('Settings saved!');
+        } catch (error) {
+            console.error("Failed to save context", error);
+            alert('Failed to save settings.');
+        } finally {
+            setSavingContext(false);
         }
     };
 
@@ -67,6 +99,21 @@ function App() {
             }
         } catch (error) {
             console.error("Error deleting ticket", error);
+        }
+    };
+
+    const handleViewTrace = async (summary, e) => {
+        e.stopPropagation();
+        try {
+            const response = await fetch(`http://localhost:8000/api/traces/${encodeURIComponent(summary)}`);
+            if (response.ok) {
+                const data = await response.json();
+                setSelectedTrace(data);
+            } else {
+                alert('Trace not found for this ticket.');
+            }
+        } catch (error) {
+            console.error("Error fetching trace", error);
         }
     };
 
@@ -143,6 +190,13 @@ function App() {
                                 <LayoutDashboard className="w-4 h-4 mr-2" />
                                 Dashboard
                             </button>
+                            <button
+                                onClick={() => setView('settings')}
+                                className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all ${view === 'settings' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
+                            >
+                                <Settings className="w-4 h-4 mr-2" />
+                                Settings
+                            </button>
                         </div>
 
                         <button
@@ -215,7 +269,7 @@ function App() {
                                         className="grid grid-cols-3 gap-4"
                                     >
                                         <StepCard active={step >= 1} icon={FileJson} title="Product Owner" desc="Refining Requirements" color="text-blue-400" />
-                                        <StepCard active={step >= 2} icon={Code} title="Specialists" desc="Tech & Security Review" color="text-violet-400" />
+                                        <StepCard active={step >= 2} icon={Code} title="Specialists" desc="Tech, Sec & QA" color="text-violet-400" />
                                         <StepCard active={step >= 3} icon={Shield} title="Gatekeeper" desc="Finalizing Ticket" color="text-emerald-400" />
                                     </motion.div>
                                 )}
@@ -261,7 +315,7 @@ function App() {
                                 )}
                             </AnimatePresence>
                         </motion.div>
-                    ) : (
+                    ) : view === 'dashboard' ? (
                         <motion.div
                             key="dashboard"
                             initial={{ opacity: 0, y: 20 }}
@@ -276,13 +330,131 @@ function App() {
                                 </div>
                             ) : (
                                 tickets.map((ticket, idx) => (
-                                    <TicketCard key={idx} ticket={ticket} onDelete={handleDelete} />
+                                    <TicketCard
+                                        key={idx}
+                                        ticket={ticket}
+                                        onDelete={handleDelete}
+                                        onViewTrace={handleViewTrace}
+                                    />
                                 ))
                             )}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="settings"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="max-w-4xl mx-auto"
+                        >
+                            <div className="bg-surface rounded-3xl border border-text-muted/10 overflow-hidden shadow-xl">
+                                <div className="p-6 border-b border-text-muted/10">
+                                    <h2 className="text-xl font-bold text-text">Project Context</h2>
+                                    <p className="text-text-muted text-sm mt-1">
+                                        Define your project's tech stack, coding style, and requirements.
+                                        This context will be provided to the AI agents for every new ticket.
+                                    </p>
+                                </div>
+                                <div className="p-6">
+                                    <textarea
+                                        value={context}
+                                        onChange={(e) => setContext(e.target.value)}
+                                        className="w-full h-64 bg-background/50 rounded-xl p-4 text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none font-mono text-sm"
+                                        placeholder="e.g., Tech Stack: React, Tailwind, Python..."
+                                    />
+                                    <div className="flex justify-end mt-4">
+                                        <button
+                                            onClick={saveContext}
+                                            disabled={savingContext}
+                                            className="flex items-center px-6 py-2 bg-primary hover:bg-blue-600 text-white rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/25"
+                                        >
+                                            {savingContext ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Saving...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Save className="w-4 h-4 mr-2" />
+                                                    Save Settings
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
+                {/* Trace Modal */}
+                <AnimatePresence>
+                    {selectedTrace && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-8"
+                            onClick={() => setSelectedTrace(null)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.95, opacity: 0 }}
+                                className="bg-surface w-full max-w-5xl h-[80vh] rounded-3xl border border-text-muted/10 shadow-2xl overflow-hidden flex flex-col"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <div className="p-6 border-b border-text-muted/10 flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                        <Activity className="w-6 h-6 text-primary" />
+                                        <h2 className="text-xl font-bold text-text">Agent Trace</h2>
+                                    </div>
+                                    <button
+                                        onClick={() => setSelectedTrace(null)}
+                                        className="p-2 hover:bg-text-muted/10 rounded-lg text-text-muted hover:text-text transition-colors"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                                    <TraceSection title="1. Brain Dump (User)" content={selectedTrace.brain_dump} color="text-slate-400" />
+                                    <TraceSection title="2. User Story (PO Agent)" content={selectedTrace.user_story} color="text-blue-400" isJson />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <TraceSection title="3a. Tech Estimate (Tech Lead)" content={selectedTrace.tech_estimate} color="text-violet-400" isJson />
+                                        <TraceSection title="3b. Security Review (SecOps)" content={selectedTrace.security_review} color="text-red-400" isJson />
+                                    </div>
+                                    <TraceSection title="3c. Test Plan (QA Agent)" content={selectedTrace.test_plan} color="text-pink-400" isJson />
+                                    <TraceSection title="4. Final Ticket (Gatekeeper)" content={selectedTrace.final_ticket} color="text-emerald-400" isJson />
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+            </div>
+        </div>
+    );
+}
+
+function TraceSection({ title, content, color, isJson }) {
+    return (
+        <div className="space-y-2">
+            <h3 className={`font-semibold ${color}`}>{title}</h3>
+            <div className="bg-background/50 rounded-xl border border-text-muted/10 overflow-hidden">
+                {isJson ? (
+                    <SyntaxHighlighter
+                        language="json"
+                        style={vscDarkPlus}
+                        customStyle={{ margin: 0, padding: '1rem', background: 'transparent', fontSize: '0.85rem' }}
+                    >
+                        {JSON.stringify(content, null, 2)}
+                    </SyntaxHighlighter>
+                ) : (
+                    <div className="p-4 text-text-muted text-sm whitespace-pre-wrap font-mono">
+                        {content}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -311,7 +483,7 @@ function StepCard({ active, icon: Icon, title, desc, color }) {
     );
 }
 
-function TicketCard({ ticket, onDelete }) {
+function TicketCard({ ticket, onDelete, onViewTrace }) {
     const [expanded, setExpanded] = useState(false);
 
     return (
@@ -327,6 +499,13 @@ function TicketCard({ ticket, onDelete }) {
                         <span className={`px-2 py-1 rounded text-xs font-bold ${ticket.priority === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
                             {ticket.priority}
                         </span>
+                        <button
+                            onClick={(e) => onViewTrace(ticket.summary, e)}
+                            className="p-1.5 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-colors"
+                            title="View Trace"
+                        >
+                            <Activity className="w-4 h-4" />
+                        </button>
                         <button
                             onClick={(e) => onDelete(ticket.summary, e)}
                             className="p-1.5 hover:bg-red-500/10 rounded-lg text-text-muted hover:text-red-500 transition-colors"
@@ -356,6 +535,22 @@ function TicketCard({ ticket, onDelete }) {
                             <h4 className="font-semibold text-text mb-1">Description</h4>
                             <p className="whitespace-pre-wrap">{ticket.description}</p>
                         </div>
+
+                        {ticket.test_plan && (
+                            <div className="bg-pink-500/5 rounded-xl p-4 border border-pink-500/10">
+                                <div className="flex items-center gap-2 mb-2 text-pink-400">
+                                    <TestTube className="w-4 h-4" />
+                                    <h4 className="font-semibold">Test Plan</h4>
+                                </div>
+                                <div className="space-y-2">
+                                    {ticket.test_plan.scenarios.map((scenario, i) => (
+                                        <div key={i} className="text-xs font-mono bg-background/50 p-2 rounded border border-text-muted/10">
+                                            {scenario}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </div>

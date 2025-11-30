@@ -22,6 +22,11 @@ class SecurityReview(BaseModel):
     approval_status: str = Field(..., description="Security approval status (Approved, Rejected, Needs Revision).")
     comments: str = Field(..., description="General security comments.")
 
+class TestPlan(BaseModel):
+    """Represents the automated test plan for a user story."""
+    scenarios: List[str] = Field(..., description="List of Gherkin-style test scenarios (Given/When/Then).")
+    edge_cases: List[str] = Field(default_factory=list, description="List of potential edge cases or boundary conditions.")
+
 class FinalTicket(BaseModel):
     """Represents the final, production-ready JIRA ticket."""
     summary: str = Field(..., description="JIRA ticket summary.")
@@ -29,3 +34,4 @@ class FinalTicket(BaseModel):
     story_points: int = Field(..., description="Final story points.")
     labels: List[str] = Field(default_factory=list, description="JIRA labels.")
     priority: str = Field(..., description="JIRA priority.")
+    test_plan: Optional[TestPlan] = Field(None, description="Automated test plan.")

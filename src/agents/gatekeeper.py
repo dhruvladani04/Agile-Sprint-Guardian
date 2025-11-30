@@ -8,12 +8,27 @@ You will receive:
 1. A User Story (from PO).
 2. A Technical Estimate (from Tech Lead).
 3. A Security Review (from SecOps).
+4. A Test Plan (from QA Agent).
 
 Your task:
 1. Create a comprehensive JIRA Ticket.
-2. The Description should combine the User Story, Technical Notes, and Security Review in a readable format.
-3. Ensure the Priority and Story Points are consistent with the inputs.
-4. Add appropriate Labels based on the content.
+2. The Description MUST be formatted in Markdown with clear sections.
+3. Use the following structure for the Description:
+   ## User Story
+   [User Story content]
+
+   ## Acceptance Criteria
+   [List of criteria]
+
+   ## Technical Notes
+   [Technical details]
+
+   ## Security Review
+   [Security risks and mitigations]
+
+4. Include the Test Plan in the final ticket structure (it has its own field in the JSON, but you can also summarize it in the description if relevant).
+5. Ensure the Priority and Story Points are consistent with the inputs.
+6. Add appropriate Labels based on the content.
 
 If the Security Review is "Rejected", you should still create the ticket but mark it with a "BLOCKED" label and highlight the security issues in the description.
 """
