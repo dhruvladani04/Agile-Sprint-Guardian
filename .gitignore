@@ -10,3 +10,8 @@ ui/node_modules/
 ui/dist/
 .DS_Store
 uv.lock
+list_models.py
+original_prompt.txt
+project_context.md
+reproduce_api_issue.py
+traces/
