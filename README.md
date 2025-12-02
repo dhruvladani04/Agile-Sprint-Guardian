@@ -7,7 +7,8 @@
 
 
 ## 🚀 The Pitch
-![Youtube Demo Video](https://youtu.be/bJ3J0CTfVPo?si=nvy4MTA8aACOUvU3)
+[![Alt text](<img width="1024" height="1024" alt="ChatGPT Image Dec 1, 2025, 11_02_38 PM" src="https://github.com/user-attachments/assets/c3571abc-6330-4595-aae7-45d47718b722" />
+)](https://youtu.be/bJ3J0CTfVPo?si=nvy4MTA8aACOUvU3)
 
 ### The Problem
 In software development, the gap between a "brain dump" requirement and a ready-to-work ticket is massive. Product Owners struggle to capture technical details, security implications are often an afterthought, and QA test plans are written too late. This leads to:
