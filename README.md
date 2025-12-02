@@ -2,7 +2,9 @@
 
 **Turn raw ideas into production-ready JIRA tickets with a team of AI agents.**
 
-![Agile Sprint Guardian Banner](https://via.placeholder.com/1200x400?text=Agile+Sprint+Guardian)
+![Agile Sprint Guardian Banner]
+![agile_sprint_guardian](https://github.com/user-attachments/assets/b97b1730-0e94-450c-b5d8-6c11137cbc51)
+
 
 ## 🚀 The Pitch
 
