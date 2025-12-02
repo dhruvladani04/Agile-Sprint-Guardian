@@ -6,6 +6,7 @@
 
 
 ## 🚀 The Pitch
+To view the Demo click the below thumbnail
 [![Demo Link](https://github.com/user-attachments/assets/c3571abc-6330-4595-aae7-45d47718b722)](https://youtu.be/bJ3J0CTfVPo)
 
 
