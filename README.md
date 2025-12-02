@@ -7,6 +7,7 @@
 
 
 ## 🚀 The Pitch
+![Youtube Demo Video](https://youtu.be/bJ3J0CTfVPo?si=nvy4MTA8aACOUvU3)
 
 ### The Problem
 In software development, the gap between a "brain dump" requirement and a ready-to-work ticket is massive. Product Owners struggle to capture technical details, security implications are often an afterthought, and QA test plans are written too late. This leads to:
@@ -155,3 +156,7 @@ curl -X POST http://localhost:8000/api/generate \
 
 ## 📄 License
 MIT License
+It was created as a Capstone Project for Kaggle’s 5-Day Agent Intensive Course with Google.
+Accordingly, this write-up and project materials are also released under the Attribution 4.0 International (CC BY 4.0) license.
+
+Made with ❤️ by Dhruv Ladani — Supported by Gemini 2.5 Flash
